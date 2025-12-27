@@ -32,12 +32,14 @@ export function Button({
   children,
   onClick,
   variant = "solid",
-  type = "button"
+  type = "button",
+  className = ""
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "solid" | "ghost";
   type?: "button" | "submit";
+  className?: string;
 }) {
   const base =
     "inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-sm font-medium transition";
@@ -50,7 +52,7 @@ export function Button({
     <button
       type={type}
       onClick={onClick}
-      className={`${base} ${variant === "solid" ? solid : ghost}`}
+      className={`${base} ${variant === "solid" ? solid : ghost} ${className}`}
     >
       {children}
     </button>
