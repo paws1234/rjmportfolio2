@@ -91,11 +91,11 @@ about: [
 },
  experience: [
     {
-      role: "Freelance Software Engineer",
-      company: "Self-Employed",
+      role: "Software Engineer",
+      company: "Freelance",
       period: "2021 – Present (Remote)",
       highlights: [
-        "Independently managing the full lifecycle of web applications—from design and development to deployment—to meet specific client requirements."
+        "Independently managing the full lifecycle of web applications from design and development to deployment to meet specific client requirements."
       ]
     },
     {
