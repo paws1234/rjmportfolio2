@@ -1,14 +1,19 @@
 import { resume } from "@/data/resume";
 import { Button, Pill } from "@/components/ui";
+import Image from "next/image";
 
 export default function Header() {
   return (
     <header className="mb-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="flex gap-4 items-start">
-          <div className="h-14 w-14 rounded-2xl bg-neutral-200 flex items-center justify-center text-sm font-semibold">
-            RM
-          </div>
+          <Image
+            src="/1749969274185.jpg"
+            alt={resume.name}
+            width={56}
+            height={56}
+            className="h-14 w-14 rounded-2xl object-cover"
+          />
 
           <div>
             <div className="flex items-center gap-2">

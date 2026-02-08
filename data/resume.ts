@@ -91,15 +91,22 @@ about: [
 },
  experience: [
     {
+      role: "Freelance Software Engineer",
+      company: "Self-Employed",
+      period: "2021 – Present (Remote)",
+      highlights: [
+        "Independently managing the full lifecycle of web applications—from design and development to deployment—to meet specific client requirements."
+      ]
+    },
+    {
       role: "Software Engineer",
       company: "Creatives Online",
       period: "Aug 2024 – Jan 2025 (Remote)",
-          highlights: [
+      highlights: [
         "Delivered end-to-end web applications based on client requirements.",
         "Translated business needs into practical technical solutions.",
         "Performed testing/debugging and provided ongoing maintenance & support."
       ]
-    
     },
     {
       role: "Software Engineer",
