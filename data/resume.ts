@@ -91,15 +91,7 @@ about: [
 },
  experience: [
     {
-      role: "Software Engineer",
-      company: "Freelance",
-      period: "2021 – Present (Remote)",
-      highlights: [
-        "Independently managing the full lifecycle of web applications from design and development to deployment to meet specific client requirements."
-      ]
-    },
-    {
-      role: "Software Engineer",
+     role: "Software Engineer",
       company: "Creatives Online",
       period: "Aug 2024 – Jan 2025 (Remote)",
       highlights: [
@@ -124,7 +116,7 @@ about: [
     {
       degree: "BS Information Technology",
       school: "Cebu Technological University",
-      period: "Sep 2021 – 2024"
+      period: "Sep 2021 – 2025"
     },
     {
       degree: "Senior High School Diploma",
