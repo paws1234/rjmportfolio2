@@ -4,7 +4,10 @@ import { ThemeProvider } from "@/context/ThemeContext";
 
 export const metadata = {
   title: "Reyvand Jasper Medrano — Portfolio",
-  description: "Minimal portfolio + AI chat"
+  description: "Minimal portfolio + AI chat",
+  icons: {
+    icon: [{ url: "/istockphoto-1324569030-612x612.jpg", type: "image/jpeg" }]
+  }
 };
 
 const themeInitScript = `
