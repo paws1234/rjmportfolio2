@@ -19,16 +19,16 @@ export default function Page() {
         </div>
         <div className="space-y-6">
           <Experience />
-          <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm p-5">
+          <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 p-5">
             <p className="text-sm font-semibold">Beyond Coding</p>
-            <p className="text-sm text-neutral-700 mt-2 leading-relaxed">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-2 leading-relaxed">
              When I’m not actively coding, I focus on deepening my understanding of system design, software architecture, and performance optimization. I spend time evaluating emerging technologies, frameworks, and tooling, with an emphasis on how they impact scalability, reliability, and developer experience in real-world production systems. I regularly refine my engineering practices by studying clean architecture, testing strategies, and DevOps workflows, and I enjoy sharing knowledge through clear documentation, thoughtful code reviews, and building developer-friendly abstractions that reduce complexity and improve long-term maintainability.
             </p>
           </div>
         </div>
       </div>
 
-      <footer className="py-10 text-center text-xs text-neutral-500">
+      <footer className="py-10 text-center text-xs text-neutral-500 dark:text-neutral-400">
         © {new Date().getFullYear()} Reyvand Jasper Medrano. All rights reserved.
       </footer>
 

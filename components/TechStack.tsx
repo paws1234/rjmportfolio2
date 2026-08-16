@@ -4,7 +4,7 @@ import { Card, Pill } from "@/components/ui";
 function Group({ title, items }: { title: string; items: readonly string[] }) {
   return (
     <div>
-      <p className="text-xs font-medium text-neutral-500 mb-2">{title}</p>
+      <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">{title}</p>
       <div className="flex flex-wrap gap-2">
         {items.map((it) => (
           <Pill key={it}>{it}</Pill>

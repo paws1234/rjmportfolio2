@@ -91,6 +91,27 @@ about: [
 },
  experience: [
     {
+     role: "Software Engineer",
+     company: "ICOPY legal",
+     period: "May 2025 – Present (Remote)",
+     highlights: [
+       "Built and maintained web apps using Laravel and React.js.",
+       "Refactored backend modules for maintainability and performance.",
+       "Developed and consumed RESTful APIs with clean contracts and best practices.",
+       "Collaborated with cross-functional teams; troubleshot and resolved production issues."
+     ]
+   },
+   {
+     role: "Software Engineer",
+     company: "Creatives Online",
+     period: "Aug 2024 – May 2025 (Remote)",
+     highlights: [
+       "Delivered end-to-end web applications based on client requirements.",
+       "Translated business needs into practical technical solutions.",
+       "Performed testing/debugging and provided ongoing maintenance & support."
+     ]
+   },
+   {
      role: "Freelance Software Engineer",
      company: "Independent",
      period: "2021 – Present | Remote",
@@ -101,27 +122,6 @@ about: [
        "Managed client communication, project scoping, timeline estimation, and iterative delivery—building strong product sense and the ability to prioritize high-impact work under real-world constraints."
      ]
    },
-   {
-     role: "Software Engineer",
-      company: "Creatives Online",
-      period: "Aug 2024 – Jan 2025 (Remote)",
-      highlights: [
-        "Delivered end-to-end web applications based on client requirements.",
-        "Translated business needs into practical technical solutions.",
-        "Performed testing/debugging and provided ongoing maintenance & support."
-      ]
-    },
-    {
-      role: "Software Engineer",
-      company: "ICOPY legal",
-      period: "May 2025 – Present (Remote)",
-      highlights: [
-        "Built and maintained web apps using Laravel and React.js.",
-        "Refactored backend modules for maintainability and performance.", 
-        "Developed and consumed RESTful APIs with clean contracts and best practices.",
-        "Collaborated with cross-functional teams; troubleshot and resolved production issues."
-      ]
-    }
   ], 
   education: [
     {

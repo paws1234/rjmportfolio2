@@ -10,8 +10,8 @@ export function Card({
   action?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
+    <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
         <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
         {action ? <div>{action}</div> : null}
       </div>
@@ -22,7 +22,7 @@ export function Card({
 
 export function Pill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs text-neutral-700">
+    <span className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
       {children}
     </span>
   );
@@ -44,9 +44,9 @@ export function Button({
   const base =
     "inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-sm font-medium transition";
   const solid =
-    "bg-neutral-900 text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300";
+    "bg-neutral-900 text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200";
   const ghost =
-    "bg-white text-neutral-800 border border-neutral-200 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200";
+    "bg-white text-neutral-800 border border-neutral-200 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800";
 
   return (
     <button

@@ -6,6 +6,9 @@
   color-scheme: light;
 }
 
+.dark {
+  color-scheme: dark;
+}
 html, body {
   height: 100%;
 }

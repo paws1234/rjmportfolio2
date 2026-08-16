@@ -1,5 +1,6 @@
 import { resume } from "@/data/resume";
 import { Button, Pill } from "@/components/ui";
+import ThemeToggle from "@/components/ThemeToggle";
 import Image from "next/image";
 
 export default function Header() {
@@ -20,14 +21,14 @@ export default function Header() {
               <h1 className="text-2xl font-semibold tracking-tight">
                 {resume.name}
               </h1>
-              <span className="text-xs rounded-full border border-neutral-200 px-2 py-0.5 text-neutral-700">
+              <span className="text-xs rounded-full border border-neutral-200 px-2 py-0.5 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
                 {resume.handle}
               </span>
             </div>
-            <p className="text-sm text-neutral-600 mt-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
               {resume.title}
             </p>
-            <p className="text-sm text-neutral-500 mt-1">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
               {resume.location}
             </p>
 
@@ -39,7 +40,8 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <ThemeToggle />
           <a href={`mailto:${resume.email}`}>
             <Button>Send Email</Button>
           </a>

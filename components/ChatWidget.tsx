@@ -49,7 +49,7 @@ export default function ChatWidget() {
 
 
   return (
-    <div className="fixed bottom-6 right-6 w-[380px] max-w-[98vw] rounded-3xl border border-neutral-200 bg-white shadow-2xl overflow-hidden z-50 flex flex-col">
+    <div className="fixed bottom-6 right-6 w-[380px] max-w-[98vw] rounded-3xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 shadow-2xl overflow-hidden z-50 flex flex-col">
       {/* Header with avatar and title */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-neutral-900 to-neutral-700">
         <div className="flex items-center gap-3">
@@ -75,10 +75,10 @@ export default function ChatWidget() {
       </div>
 
       {/* Chat area */}
-      <div ref={listRef} className="flex-1 min-h-[320px] max-h-[420px] overflow-y-auto px-4 py-4 space-y-3 bg-neutral-50">
+      <div ref={listRef} className="flex-1 min-h-[320px] max-h-[420px] overflow-y-auto px-4 py-4 space-y-3 bg-neutral-50 dark:bg-neutral-950">
         {messages.length === 0 ? (
           <div className="space-y-2 text-center">
-            <p className="text-sm text-neutral-700">
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">
               Hi! I can answer questions about Reyvand’s portfolio.
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -86,7 +86,7 @@ export default function ChatWidget() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-xs rounded-full border border-neutral-300 bg-white px-3 py-1 hover:bg-neutral-100 shadow-sm"
+                  className="text-xs rounded-full border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 px-3 py-1 hover:bg-neutral-100 shadow-sm"
                 >
                   {s}
                 </button>
@@ -104,7 +104,7 @@ export default function ChatWidget() {
               className={`relative max-w-[90%] px-4 py-2 rounded-2xl shadow-sm text-sm whitespace-pre-line ${
                 m.role === "user"
                   ? "bg-gradient-to-br from-neutral-900 to-neutral-700 text-white"
-                  : "bg-white text-neutral-900 border border-neutral-200"
+                : "bg-white text-neutral-900 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700"
               }`}
             >
               {m.text}
@@ -122,7 +122,7 @@ export default function ChatWidget() {
         {isSending ? (
           <div className="flex items-center gap-2 animate-pulse">
             <span className="inline-block w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg">🤖</span>
-            <span className="text-xs text-neutral-500">Assistant is typing…</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">Assistant is typing…</span>
           </div>
         ) : null}
 
@@ -137,13 +137,13 @@ export default function ChatWidget() {
           send(v);
           setText("");
         }}
-        className="flex gap-2 px-4 py-4 border-t border-neutral-200 bg-white"
+        className="flex gap-2 px-4 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       >
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type your question and press Enter…"
-          className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200 resize-none min-h-[38px] max-h-32"
+          className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200 resize-none min-h-[38px] max-h-32"
           rows={1}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
