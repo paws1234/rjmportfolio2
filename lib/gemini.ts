@@ -13,7 +13,7 @@ export async function askGroq(prompt: string) {
         "Authorization": `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "qwen/qwen3.6-27b",
         temperature: 0.3,
         messages: [
           {
@@ -56,6 +56,8 @@ If you violate any rule above, immediately correct yourself and restate the answ
 
 function enforceFirstPerson(text: string): string {
   return text
+    .replace(/<think[\s\S]*?<\/think>/gi, "")
+    .replace(/<thinking[\s\S]*?<\/thinking>/gi, "")
     // Replace common third-person patterns
     .replace(/\bReyvand Jasper Medrano\b/gi, "I")
     .replace(/\bReyvand\b/gi, "I")

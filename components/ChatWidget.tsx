@@ -16,6 +16,19 @@ export default function ChatWidget() {
   const { isOpen, setIsOpen, messages, send, clear, isSending } = useChat();
   const [text, setText] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
+  const taRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const autoGrow = () => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  };
+
+  const resetInput = () => {
+    setText("");
+    if (taRef.current) taRef.current.style.height = "auto";
+  };
 
 
   useEffect(() => {
@@ -62,7 +75,10 @@ export default function ChatWidget() {
         <div className="flex gap-2">
           <button onClick={clear} className="text-xs text-neutral-200 hover:text-white">Clear</button>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              clear();
+              setIsOpen(false);
+            }}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-800/30 transition"
             aria-label="Close chat"
             title="Close"
@@ -75,7 +91,7 @@ export default function ChatWidget() {
       </div>
 
       {/* Chat area */}
-      <div ref={listRef} className="flex-1 min-h-[320px] max-h-[420px] overflow-y-auto px-4 py-4 space-y-3 bg-neutral-50 dark:bg-neutral-950">
+      <div ref={listRef} className="flex-1 px-4 py-4 space-y-3 bg-neutral-50 dark:bg-neutral-950">
         {messages.length === 0 ? (
           <div className="space-y-2 text-center">
             <p className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -135,15 +151,19 @@ export default function ChatWidget() {
           const v = text.trim();
           if (!v) return;
           send(v);
-          setText("");
+          resetInput();
         }}
         className="flex gap-2 px-4 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
       >
         <textarea
+          ref={taRef}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            autoGrow();
+          }}
           placeholder="Type your question and press Enter…"
-          className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200 resize-none min-h-[38px] max-h-32"
+          className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200 resize-none overflow-hidden min-h-[38px] max-h-32"
           rows={1}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -151,7 +171,7 @@ export default function ChatWidget() {
               const v = text.trim();
               if (!v) return;
               send(v);
-              setText("");
+              resetInput();
             }
           }}
         />
