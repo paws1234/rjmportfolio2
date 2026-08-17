@@ -111,17 +111,6 @@ about: [
        "Performed testing/debugging and provided ongoing maintenance & support."
      ]
    },
-   {
-     role: "Freelance Software Engineer",
-     company: "Independent",
-     period: "2021 – Present | Remote",
-     highlights: [
-       "Independently owned the full SDLC for multiple client web applications—requirements gathering, system architecture, full-stack implementation, testing, deployment, and ongoing maintenance.",
-       "Delivered production systems on AWS, DigitalOcean, Vercel, and Render using Docker, environment-based configuration, and automated deployments for reliable, scalable hosting.",
-       "Built solutions spanning MySQL/PostgreSQL, MongoDB, Redis, Laravel, Node.js, React, Vue.js, and Next.js, selecting the right technology for each problem domain and client constraint.",
-       "Managed client communication, project scoping, timeline estimation, and iterative delivery—building strong product sense and the ability to prioritize high-impact work under real-world constraints."
-     ]
-   },
   ], 
   education: [
     {
