@@ -53,7 +53,7 @@ export default function ChatWidget() {
           onClick={() => setIsOpen(true)}
           className="rounded-full bg-gradient-to-br from-neutral-900 to-neutral-700 text-white px-6 py-4 shadow-2xl hover:scale-105 transition-all flex items-center gap-2"
         >
-          <span className="inline-block w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg font-bold">🤖</span>
+          <span className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg font-bold">🤖</span>
           <span>Chat</span>
         </button>
       </div>
@@ -66,7 +66,7 @@ export default function ChatWidget() {
       {/* Header with avatar and title */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-neutral-900 to-neutral-700">
         <div className="flex items-center gap-3">
-          <span className="inline-block w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-2xl">🤖</span>
+          <span className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-2xl">🤖</span>
           <div>
             <p className="text-base font-bold text-white">Portfolio Assistant</p>
             <p className="text-xs text-neutral-200">Ask about experience, stack, contact</p>
@@ -137,7 +137,7 @@ export default function ChatWidget() {
 
         {isSending ? (
           <div className="flex items-center gap-2 animate-pulse">
-            <span className="inline-block w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg">🤖</span>
+            <span className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg">🤖</span>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">Assistant is typing…</span>
           </div>
         ) : null}
