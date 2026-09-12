@@ -155,5 +155,111 @@ export const projects: Project[] = [
       "The result is a live demo that stays honest under failure. While the WordPress instance behind it is running, the storefront lists and prices every product from the real catalogue and checkout creates an actual WooCommerce order. When it is not, the site serves its last read, says plainly that the shop is offline, and returns a receipt for what it would have sent rather than an error page.",
       "What I took from building it: the hard part of commerce is not rendering a product grid, it is deciding who owns the truth — the price, the stock, the order status — and then refusing to duplicate that decision anywhere else. Designing the offline path first is what made the online path simple."
     ]
+  },
+  {
+    id: "quiz-maker",
+    name: "Quiz Maker",
+    tagline: "Build a quiz, share a link, see how people did — Next.js, a GraphQL API and MongoDB.",
+    year: "2026",
+    role: "Sole engineer: the GraphQL schema and resolvers, the builder and the player, the MongoDB model, the validation layer, the Docker setup, and the deployment.",
+    status: "Live and in use. The published quizzes are open to anyone, but the builder is locked to me behind an admin token — the demo quizzes are there to take rather than to edit.",
+    liveUrl: "https://quizmaker-teal.vercel.app/",
+    repoUrl: "https://github.com/paws1234/quizmaker",
+    summary:
+      "Quiz Maker is a headless quiz app: a builder where a quiz is written, a public player where it is taken, and light analytics that show how it went. The interesting constraint is that a quiz has to be fully readable by the person taking it and must not leak its answers — so the public shape of the data is deliberately different from the private one. The public quiz type has no correct-answer field at all, and scoring happens on the server, which means the player can be embedded on anyone's website without the answers travelling with it.",
+    metrics: [
+      { label: "GraphQL operations", value: "8" },
+      { label: "Answer keys in the payload", value: "0" },
+      { label: "Quiz storage", value: "1 document" },
+      { label: "Public quiz ids", value: "7 chars" }
+    ],
+    brief: [
+      "A quiz is a small app with an unusual requirement: the person taking it must be able to read the whole thing and must not be able to read the answers. That one constraint decides most of the architecture. It is why scoring cannot happen in the browser, why the answer key cannot simply be hidden in the markup, and why the public shape of the data has to be a different type from the one the builder edits.",
+      "The other half of the brief was operational. Quizzes should outlive deploys, so nothing about them may be baked into a build. And the whole thing had to come up on someone else's machine with one command — which is what put the application and the database into Docker together, with the same source also deployable to a platform as a plain Next.js app."
+    ],
+    built: [
+      "A builder that creates questions, marks one option correct, attaches an optional explanation and reorders the list, then sets the rules: brand colour, logo, a consent step with its own wording, whether correct answers are shown afterwards, whether retakes are allowed, and an optional expiry date.",
+      "A public player at /q/<id>, or a friendly /q/<slug>, which shows the consent step when the quiz asks for one, then asks the questions with the author's own branding applied. It is embeddable in an iframe on any site by design.",
+      "Server-side scoring: submitting an attempt returns the score, the percentage and a per-question result with the correct option and the explanation — but only once the attempt is over, so nothing is revealed a question early.",
+      "Light analytics per quiz — starts, completions, average score and the questions people miss most — computed from per-question counters kept on the quiz rather than by replaying every submission.",
+      "A share panel that hands out the link, an iframe snippet for embedding the quiz elsewhere, and social shortcuts.",
+      "A health endpoint that answers 200 only when the app and its database connection are both working, which is also what the container healthcheck watches, so 'healthy' means the database is genuinely reachable.",
+      "A Docker setup that runs the app and the database together, with a production overlay serving a compiled standalone build and a third overlay for pointing the app at a hosted MongoDB instead of the local container.",
+      "An end-to-end smoke script that exercises the API and a seed script for demo content, both runnable against either a local stack or a live deployment."
+    ],
+    architecture: [
+      {
+        layer: "Public player",
+        detail: "/q/[id] reads the quiz on the server and then hydrates. It is rendered per request rather than prerendered, so a quiz edited in the builder appears at its link immediately instead of at the next build."
+      },
+      {
+        layer: "Builder",
+        detail: "The quiz list and editor, reachable only with an admin token that is exchanged for an httpOnly, SameSite=strict cookie — so no token is ever kept in page script."
+      },
+      {
+        layer: "API",
+        detail: "One GraphQL Yoga endpoint is the entire API surface: three queries and five mutations. The builder is only one client of it — a shell script can drive the same endpoint, which is what the smoke test does."
+      },
+      {
+        layer: "Data",
+        detail: "MongoDB through Mongoose, one document per quiz with its questions embedded, because a quiz is always read and written as a whole. The connection is cached on globalThis so serverless invocations do not open a new one per request."
+      },
+      {
+        layer: "Validation",
+        detail: "A normalise layer sits in front of every write: it caps sizes, requires each question to have a correct option that actually exists, validates the brand colour and logo URL, and rejects duplicate slugs. Bad input comes back as a typed input error, not a 500."
+      },
+      {
+        layer: "Environment",
+        detail: "Docker in development — the dev server plus a MongoDB container bound to loopback only — and Vercel in front of MongoDB Atlas in production, with the same source doing both."
+      }
+    ],
+    decisions: [
+      {
+        title: "The answer key is absent from the public schema, not hidden in the UI.",
+        detail: "The public quiz type has no correct-answer field at all, so asking for one is a schema error rather than a response that has to be filtered. Scoring lives on the server. That removes an entire class of bug: there is no code path that could accidentally render an answer, because the field does not exist on the type the player receives, and reading the page's HTML or calling the API directly shows nothing."
+      },
+      {
+        title: "Every write is normalised before it is trusted.",
+        detail: "Validation is not left to the builder's form. Sizes are capped, each question must have a correct option that genuinely exists, the brand colour and logo URL are checked, and duplicate slugs are rejected — all of it before the document is touched, and all of it reported as a typed input error so a bad request never looks like a server fault."
+      },
+      {
+        title: "The builder fails closed.",
+        detail: "The admin token is compared in constant time and exchanged for an httpOnly, SameSite=strict cookie, so the browser cannot read it and another site cannot replay it. Unset the variable and the builder does not quietly open up — it stops working. There is one deliberate switch that removes the check for a showcase deployment, it is off unless set, and the documentation says to take a database dump before turning it on."
+      },
+      {
+        title: "A type-check is not enough to ship this.",
+        detail: "Type-checking alone does not catch route-handler signature problems that only appear in a production build, so the production build is the gate, not the type-check. A build run through the development image also needs the production environment set explicitly, or it fails while prerendering the not-found page with a misleading error about importing HTML outside the pages directory."
+      },
+      {
+        title: "Development and production build different image tags, on purpose.",
+        detail: "With one shared tag, the last build wins: starting the development stack quietly serves the production image as the dev service, which then fails because it runs as a different user than the dependency volume it is handed. Distinct tags make that impossible rather than merely unlikely."
+      },
+      {
+        title: "A backup is scoped to one database, because the unscoped version is destructive.",
+        detail: "A plain dump also captures the cluster's own user accounts, and restoring that archive into a hosted cluster replaces its accounts with your local ones — locking you out mid-restore. The failure does not present as a backup problem: it surfaces as an authentication error partway through the restore. The dump names its database, and the check is that the archive must not mention the admin user collection."
+      },
+      {
+        title: "Ids are random, and the database is not reachable.",
+        detail: "Quizzes are addressed by a random seven-character id rather than a sequential number, so the space is not enumerable, and the MongoDB container is published on loopback only with authentication on. The player is embeddable by design, which is a deliberate exception rather than an oversight."
+      }
+    ],
+    stack: [
+      "Next.js 15 (App Router)",
+      "React",
+      "TypeScript",
+      "GraphQL Yoga",
+      "GraphQL",
+      "Mongoose",
+      "MongoDB 7",
+      "MongoDB Atlas",
+      "Docker",
+      "Docker Compose",
+      "Node.js",
+      "Vercel"
+    ],
+    outcome: [
+      "It is live and in use. Quizzes are written in the builder, taken through a share link or embedded on another site, and scored on the server; the analytics are real counters rather than a mock. A quiz edited in the builder appears at its link immediately, because the player is rendered per request instead of frozen into a build.",
+      "What I took from it: the hard part was not the quiz interface, it was deciding what a client is allowed to know. Splitting the public type from the admin type deleted a whole category of risk, because the safest field is the one that does not exist. What is genuinely missing is documented rather than glossed over — there are no per-user accounts, no rate limiting, and no password-protected quizzes yet."
+    ]
   }
 ];
