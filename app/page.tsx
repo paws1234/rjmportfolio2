@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import About from "@/components/About";
 import TechStack from "@/components/TechStack";
 import Experience from "@/components/Experience";
-// import Projects from "@/components/Projects";
+import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 import ChatWidget from "@/components/ChatWidget";
 
@@ -14,7 +14,7 @@ export default function Page() {
         <div className="space-y-6">
           <About />
           <TechStack />
-          {/* <Projects /> */}
+          <Projects />
           <Contact />
         </div>
         <div className="space-y-6">

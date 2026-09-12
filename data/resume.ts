@@ -135,23 +135,6 @@ about: [
       period: "2015 – 2021"
     }
   ],
-  // projects: [
-  //   {
-  //     name: "ICopy (Legal-tech Platform)",
-  //     desc: "Laravel-based platform integrating third-party systems and webhooks with UX-aligned admin tooling.",
-  //     tags: ["Laravel", "MySQL", "REST", "Docker"]
-  //   },
-  //   {
-  //     name: "Docu OCR Engine",
-  //     desc: "Document processing service with structured extraction, tests, and containerized runtime.",
-  //     tags: ["Python", "FastAPI", "Docker"]
-  //   },
-  //   {
-  //     name: "Financial Planning App",
-  //     desc: "React Native + Laravel API + MongoDB app for budgeting, tracking, and planning.",
-  //     tags: ["React Native", "Laravel", "MongoDB"]
-  //   }
-  // ],
   community: {
     speaking: "Available for speaking at events about software development and emerging technologies."
   },
