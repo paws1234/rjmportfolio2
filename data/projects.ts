@@ -261,5 +261,120 @@ export const projects: Project[] = [
       "It is live and in use. Quizzes are written in the builder, taken through a share link or embedded on another site, and scored on the server; the analytics are real counters rather than a mock. A quiz edited in the builder appears at its link immediately, because the player is rendered per request instead of frozen into a build.",
       "What I took from it: the hard part was not the quiz interface, it was deciding what a client is allowed to know. Splitting the public type from the admin type deleted a whole category of risk, because the safest field is the one that does not exist. What is genuinely missing is documented rather than glossed over — there are no per-user accounts, no rate limiting, and no password-protected quizzes yet."
     ]
+  },
+  {
+    id: "bookify",
+    name: "Bookify",
+    tagline: "A self-hosted booking and ticketing site — WordPress and one plugin, a diary that cannot double-book a place, and a Postgres copy that rebuilds the site on a host with no shell.",
+    year: "2026",
+    role: "Sole engineer: the booking plugin, the child theme's design layer, the Elementor layouts, the payments and email paths, the Docker image, the deploy, and the PostgreSQL mirror.",
+    status: "Live on Render's free plan, which shapes how it behaves. An idle instance is spun down, so the first visit waits while it rebuilds itself — measured at 46 seconds from cold — and the filesystem is wiped on every restart, so the session photographs come back from the database copy as they are asked for. Payments run in Stripe test mode and the business details in the database are a placeholder studio, so this is a demonstration rather than a business.",
+    liveUrl: "https://bookify-tgpz.onrender.com/",
+    repoUrl: "https://github.com/paws1234/Bokoify",
+    summary:
+      "Bookify is a booking and ticketing site for a small practice — a therapist, a coach, a studio — built as WordPress plus one plugin and one child theme, with nothing bought: core, the free Elementor, a free parent theme and my own PHP. A visitor reads what the business offers, picks a session, sees the times that are genuinely free, books one, pays a deposit or the full price, and then cancels or moves it from the link in the confirmation email. It also sells places at dated events, priced and limited by ticket tiers. Underneath, it is a concurrency problem wearing the costume of a form: two people can want the same last place in the same second, a payment can be confirmed by a webhook nobody is watching for, and a copy of the data on a second database has to be good enough to rebuild the whole site on a host that gives you no shell, no cron and no disk.",
+    metrics: [
+      { label: "Sessions published", value: "8" },
+      { label: "Plugin-owned tables", value: "0" },
+      { label: "Rows restored at boot", value: "713" },
+      { label: "Probe assertions", value: "124" }
+    ],
+    brief: [
+      "A small practice loses money to the gaps around its calendar: the call that goes unanswered, the double booking nobody notices until the day itself, the no-show that was never confirmed and never reminded. A booking site is the obvious answer, but the form is the easy half. The half worth building is the handful of decisions that separate a form from a diary — who owns the free times, who gets the last place when two people want it in the same instant, and what a booking's status is allowed to be when the news arrives through something other than the browser.",
+      "The brief also insisted on self-hosting: no SaaS scheduler, no paid plugin, no subscription — WordPress core, free Elementor as the design tool, and every booking behaviour written as PHP in one plugin. And it had to deploy cheaply, which turned out to be the constraint that shaped the most. Render's free plan gives you no disk, no cron job and no shell, so there is nowhere to put an uploaded photograph, nothing to run the reminders, and no way to import a database dump. The site had to be able to rebuild itself from a copy of its own data on a host where nothing survives a restart."
+    ],
+    built: [
+      "Four post types and no plugin-owned tables: Sessions and Events are public and queryable, Bookings and Ticket tiers are private, and the entire domain is posts, registered meta, options and the users table. Nothing needed a schema migration, and the WordPress list screens for every one of them came for free.",
+      "One booking form — a shortcode, and an Elementor widget in its own Bookify category where every label, price and message is an editable control — that renders as an ordinary POST form carrying a WordPress nonce, so it books with JavaScript switched off. The script upgrades it in place: choosing a day loads that day's real free times without a page reload.",
+      "A diary made of rules rather than a hard-coded list: weekdays and hours per day, slot interval, lead time, how far ahead to sell, and blocked dates, all kept in one option. Checked against the live site rather than assumed — a Wednesday offers fifteen 30-minute slots from 09:00, a Saturday seven from 10:00, a Sunday none, and a date in the past none.",
+      "Capacity that holds under contention. The places left in a slot are re-checked inside a MySQL advisory lock, so two bookings arriving in the same instant cannot both consume the last place.",
+      "The whole email surface: confirmation, the manage link, a cancellation, a reminder before the session, and an operator's summary once an event's bookings close — table-based HTML with inline styles and no web font, sent through Resend's HTTP API when a key and a sender are configured and through WordPress's own mailer when they are not.",
+      "Customer self-service on a signed, expiring token compared with hash_equals(), so a booking is cancelled or moved from the link in the email rather than by a post id in a URL.",
+      "Payments through Stripe Checkout, called with WordPress's own HTTP function: no card data reaches this server and no payment plugin is installed for it. The booking is marked paid by the signature-verified webhook rather than by the browser returning.",
+      "A one-way mirror into PostgreSQL — the booking domain as six typed tables with real dates, prices and foreign keys, the site's own tables as one JSON row per row, and the image bytes themselves, base64 in a jsonb column — because on a host with no disk, that copy is the only thing left after a restart.",
+      "The rest of what a real site needs, without a plugin bought for it: Cloudflare Turnstile with per-IP and per-email rate limits, LocalBusiness and Service structured data emitted from the stored options, and a 404 template in the child theme that answers a genuine 404."
+    ],
+    architecture: [
+      {
+        layer: "The site",
+        detail: "WordPress renders every page, and the pages are Elementor layouts stored in the database rather than committed as files. The look is a child theme whose entire design system — colour, type, space, radius, shadow and motion, in both colour schemes — is one block of tokens."
+      },
+      {
+        layer: "The form",
+        detail: "One shortcode, one Elementor widget and one real POST request. The script that turns the form into a live calendar only ever reads; it cannot change what the server will accept."
+      },
+      {
+        layer: "Availability",
+        detail: "The diary's rules live in one option, and the free-time queries are cached in front of them. The capacity check deliberately is not cached, because the write path decides with it."
+      },
+      {
+        layer: "The write path",
+        detail: "Creating, cancelling and rescheduling a booking, each of them wrapped around a MySQL advisory lock that makes check-then-insert safe rather than merely quick."
+      },
+      {
+        layer: "Payments and email",
+        detail: "Stripe Checkout out, a signature-verified webhook in, and one choke point that chooses between Resend and WordPress's mailer for every message the site sends."
+      },
+      {
+        layer: "The mirror",
+        detail: "Supabase, reached either through its HTTPS API or over a direct Postgres socket, chosen inside a single function — the same tables, the same rows and the same reconciliation whichever transport is in use."
+      },
+      {
+        layer: "Delivery",
+        detail: "A Docker image that pins what git cannot provide, and two deploy blueprints: the free one runs MariaDB beside Apache, because a free instance cannot reach a private database service."
+      }
+    ],
+    decisions: [
+      {
+        title: "The webhook marks a booking paid. The browser coming back does not.",
+        detail: "A return URL is something a visitor can close the tab on, replay or forge, so it is the wrong witness for money. The booking's outcome is written by the one caller that can prove who it is: a Stripe-signed webhook whose signature is verified before anything is read or written, and whose permission check is open only because the caller is Stripe. A payment that arrives late is confirmed by the webhook that eventually lands, not by a page assuming it worked."
+      },
+      {
+        title: "The number that decides the last place is never cached.",
+        detail: "Availability is asked for constantly, so it is cached. Capacity is not: the places remaining in a slot and whether that slot is still on offer have to be answers the write path can trust at the moment it writes, so they stay uncached while everything around them is not. A cache cannot fix two requests that both read 'one left', which is why the check and the insert sit inside an advisory lock rather than behind a faster read."
+      },
+      {
+        title: "The mirror is strictly one direction, and it is written at shutdown.",
+        detail: "Nothing ever reads PostgreSQL back, so a mirror that is down, paused or misconfigured cannot change a single answer the site gives — a booking is still taken and its place still consumed, and the failure is recorded rather than raised. The rows are also built at shutdown rather than when the write happens, because WordPress fires its save hook before the twenty-odd meta values that make a booking a booking have been written; a transform run there would faithfully publish a row of nulls."
+      },
+      {
+        title: "There are no plugin-owned tables.",
+        detail: "The domain is posts, registered meta, options and the users table. That means no schema to migrate, admin list screens that already existed, and no custom table for a core or plugin upgrade to strand. The cost is working within post meta instead of beside it, and it is worth paying for a plugin that has to survive years of WordPress releases."
+      },
+      {
+        title: "Every optional feature is off when its variable is empty.",
+        detail: "Resend, Stripe, Turnstile and the mirror are each switched on by configuration and absent without it, and with none of them set the site behaves exactly as it did before that feature existed. It is what lets one codebase be both a demonstration and a live booking business, and it means a missing key reads as a feature that is off rather than a site that is broken."
+      },
+      {
+        title: "The theme is allowed to present, and to do nothing else.",
+        detail: "No post types, no shortcodes, no request handling and no queries live in the child theme — behaviour belongs to the plugin, so a theme switch is a visual change rather than the removal of the booking system. The design tokens live in the theme for the same reason: a redesign costs a stylesheet, and it cannot reach the code that takes bookings."
+      },
+      {
+        title: "The images travel inside the database, because a diskless host has nowhere to keep them.",
+        detail: "A free instance wipes its filesystem on every restart, so a file that is not on disk is served from the mirrored copy, written back and handed to the browser on the way past. Verified on the live site: a session photograph that was not on disk answered 302 while its already-fetched generated size came back 200 from Apache. A bucket and a CDN would both be smaller and faster, and both would be a second system, a second credential and a second thing to configure."
+      }
+    ],
+    stack: [
+      "WordPress",
+      "PHP 8.3",
+      "MariaDB",
+      "PostgreSQL",
+      "Elementor",
+      "Custom post types",
+      "WordPress REST API",
+      "MySQL advisory locks",
+      "WP-CLI",
+      "Docker",
+      "Docker Compose",
+      "Render",
+      "Supabase",
+      "Stripe",
+      "Resend",
+      "Cloudflare Turnstile"
+    ],
+    outcome: [
+      "It is live, and its numbers were taken rather than estimated. A container starting against an empty database and an empty volume rebuilt the whole site from the copy — installing WordPress, restoring 713 rows and serving the real home page with every image fetched from PostgreSQL on first request. Every one of 4,240 restored values was compared against the copy and found identical, 32 image files were decoded and hashed against the originals with none differing, and the mirror alone carries 124 assertions across five re-runnable probes. The gaps are stated as plainly as the results: a free instance has no disk and no cron, so reminders and event summaries only run if a page view happens to arrive; Elementor is pinned to a beta because that is the version the design layer was measured against; and the repository's own pre-launch list — replace the placeholder business details, empty the mail redirect, verify a sending domain, remove the test keys, delete the probe bookings — is still open.",
+      "What I took from building it: a booking system is not a form with a database behind it, it is a disagreement about authority. Who owns the free times, who gets the last place, who is allowed to say that money arrived, and what the site may still do once nothing else is reachable — every hard decision here was one of those, and the code is shortest exactly where an answer was settled once and then obeyed everywhere else."
+    ]
   }
 ];
