@@ -136,66 +136,106 @@ function CaseStudy({
     );
 }
 
-export default function Projects() {
+/** The accordion. Both cards at the bottom of this file render one of these, so an
+ *  entry behaves the same wherever it is filed. */
+function List({ items }: { items: Project[] }) {
     // Collapsed by default. Entries toggle independently, so opening one case study
     // never closes another. Every panel is rendered only while it is open, which is
     // what keeps this section the same height whether it holds one project or ten.
     const [open, setOpen] = useState<Record<string, boolean>>({});
 
     return (
-        <Card
-            title="Projects"
-            action={
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {projects.length} {projects.length === 1 ? "project" : "projects"}
-                </span>
-            }
-        >
-            <div className="space-y-3">
-                {projects.map((p) => {
-                    const isOpen = Boolean(open[p.id]);
-                    const panelId = `${p.id}-case-study`;
-                    const buttonId = `${p.id}-toggle`;
+        <div className="space-y-3">
+            {items.map((p) => {
+                const isOpen = Boolean(open[p.id]);
+                const panelId = `${p.id}-case-study`;
+                const buttonId = `${p.id}-toggle`;
 
-                    return (
-                        <article
-                            key={p.id}
-                            className="rounded-2xl border border-neutral-200 dark:border-neutral-800"
-                        >
-                            <div className="flex flex-wrap items-start justify-between gap-3 p-4">
-                                <div className="min-w-0 flex-1">
-                                    <h3 className="text-base font-semibold tracking-tight">
-                                        <button
-                                            id={buttonId}
-                                            type="button"
-                                            onClick={() => setOpen((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
-                                            aria-expanded={isOpen}
-                                            aria-controls={panelId}
-                                            className="group flex w-full items-center gap-2 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600"
-                                        >
-                                            <Chevron open={isOpen} />
-                                            <span className="group-hover:underline">{p.name}</span>
-                                        </button>
-                                    </h3>
+                return (
+                    <article
+                        key={p.id}
+                        className="rounded-2xl border border-neutral-200 dark:border-neutral-800"
+                    >
+                        <div className="flex flex-wrap items-start justify-between gap-3 p-4">
+                            <div className="min-w-0 flex-1">
+                                <h3 className="text-base font-semibold tracking-tight">
+                                    <button
+                                        id={buttonId}
+                                        type="button"
+                                        onClick={() => setOpen((prev) => ({ ...prev, [p.id]: !prev[p.id] }))}
+                                        aria-expanded={isOpen}
+                                        aria-controls={panelId}
+                                        className="group flex w-full items-center gap-2 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600"
+                                    >
+                                        <Chevron open={isOpen} />
+                                        <span className="group-hover:underline">{p.name}</span>
+                                    </button>
+                                </h3>
 
-                                    <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{p.tagline}</p>
-                                </div>
+                                <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{p.tagline}</p>
+                            </div>
 
-                                <div className="flex shrink-0 gap-2">
+                            <div className="flex shrink-0 gap-2">
+                                {p.liveUrl ? (
                                     <a href={p.liveUrl} target="_blank" rel="noreferrer noopener">
                                         <Button>Live demo ↗</Button>
                                     </a>
+                                ) : null}
+                                {p.repoUrl ? (
                                     <a href={p.repoUrl} target="_blank" rel="noreferrer noopener">
                                         <Button variant="ghost">Source ↗</Button>
                                     </a>
-                                </div>
+                                ) : null}
                             </div>
+                        </div>
 
-                    {isOpen ? <CaseStudy project={p} panelId={panelId} buttonId={buttonId} /> : null}
-                </article>
-            );
-        })}
-            </div>
+                        {isOpen ? (
+                            <CaseStudy project={p} panelId={panelId} buttonId={buttonId} />
+                        ) : null}
+                    </article>
+                );
+            })}
+        </div>
+    );
+}
+
+function Count({ n, singular, plural }: { n: number; singular: string; plural: string }) {
+    return (
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+            {n} {n === 1 ? singular : plural}
+        </span>
+    );
+}
+
+/** Work that can be opened and used, so each entry leads with its live demo. */
+export default function Projects() {
+    const live = projects.filter((p) => Boolean(p.liveUrl));
+
+    return (
+        <Card title="Projects" action={<Count n={live.length} singular="project" plural="projects" />}>
+            <List items={live} />
+        </Card>
+    );
+}
+
+/**
+ * Work that cannot be demonstrated — internal, closed or simply not deployed — so
+ * there is nothing to open and the writing has to carry it.
+ *
+ * An entry with no `liveUrl` is filed here automatically. The card is not rendered
+ * while it is empty, so the page is unchanged until such an entry is added.
+ */
+export function CaseStudies() {
+    const studies = projects.filter((p) => !p.liveUrl);
+
+    if (studies.length === 0) return null;
+
+    return (
+        <Card
+            title="Case Studies"
+            action={<Count n={studies.length} singular="case study" plural="case studies" />}
+        >
+            <List items={studies} />
         </Card>
     );
 }

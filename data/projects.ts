@@ -6,9 +6,11 @@
  * of what a complete case study has to provide, so a half-written entry is a
  * compile error rather than a gap in the page.
  *
- * The `Projects` component renders every entry collapsed by default and expands
- * one only when a visitor asks for it, so the section stays a list no matter how
- * many entries are added here.
+ * The `Projects` and `CaseStudies` components render every entry collapsed by default
+ * and expand one only when a visitor asks for it, so each section stays a list no
+ * matter how many entries are added here. Which of the two an entry lands in is
+ * decided by whether it has a `liveUrl`, so there is nothing to set and nothing to
+ * keep in step.
  */
 
 export type ProjectMetric = { label: string; value: string };
@@ -29,8 +31,11 @@ export type Project = {
   role: string;
   /** Honest current state, including anything a visitor should know upfront. */
   status: string;
-  liveUrl: string;
-  repoUrl: string;
+  /** Live demo, when there is one to open. Leave it off and the entry is filed
+   *  under Case Studies rather than Projects. */
+  liveUrl?: string;
+  /** Source, when it is public. Omitted for closed work. */
+  repoUrl?: string;
   /** The paragraph that opens the case study. */
   summary: string;
   /** Four short numbers. Keep `label` under about 20 characters. */
