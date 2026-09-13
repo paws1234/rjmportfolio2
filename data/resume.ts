@@ -5,7 +5,6 @@ export const resume = {
   location: "Consolacion, Central Visayas, Philippines",
   email: "Pawsmedz@gmail.com",
   phone: "09912106474",
-  portfolio: "medrano.free.nf/Medrano",
   badges: ["Full-Stack", "Software Engineer"],
 about: [
   "Skilled software engineer with extensive experience delivering high-quality, production-ready web applications in remote and collaborative team environments.",
@@ -139,6 +138,9 @@ about: [
     speaking: "Available for speaking at events about software development and emerging technologies."
   },
   links: [
-    { label: "Portfolio", href: "https://medrano.free.nf/Medrano" }
+    {
+      label: "Resume",
+      href: "https://drive.google.com/file/d/1JmQw4VHLLlbYKulHb2M9ffH_3wYRXe32/view?usp=sharing"
+    }
   ]
 } as const;

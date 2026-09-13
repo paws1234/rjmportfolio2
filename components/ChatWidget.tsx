@@ -11,6 +11,21 @@ function formatTime(dateStr: string | undefined) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+/** Same mark in the launcher, the header and the pending row, so the assistant
+ *  is one thing rather than three different avatars. */
+function SparkMark({ className = "" }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-white shadow-lg shadow-indigo-500/30 ${className}`}
+    >
+      <svg viewBox="0 0 20 20" fill="currentColor" className="h-[55%] w-[55%]">
+        <path d="M10 1.8l1.55 4.6 4.6 1.55-4.6 1.55L10 14.1l-1.55-4.6L3.85 7.95l4.6-1.55L10 1.8zM15.6 12.4l.8 2.35 2.35.8-2.35.8-.8 2.35-.8-2.35-2.35-.8 2.35-.8.8-2.35z" />
+      </svg>
+    </span>
+  );
+}
+
 export default function ChatWidget() {
 
   const { isOpen, setIsOpen, messages, send, clear, isSending } = useChat();
@@ -36,6 +51,22 @@ export default function ChatWidget() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [isOpen, messages.length, isSending]);
 
+  // Focus the field on open, but only where there is a keyboard on screen —
+  // pulling up the soft keyboard over a phone's viewport is not a favour.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (window.matchMedia("(min-width: 640px)").matches) taRef.current?.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, setIsOpen]);
+
   const suggested = useMemo(
     () => [
       "What tech stack do you use most?",
@@ -50,11 +81,14 @@ export default function ChatWidget() {
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <button
+          type="button"
           onClick={() => setIsOpen(true)}
-          className="rounded-full bg-gradient-to-br from-neutral-900 to-neutral-700 text-white px-6 py-4 shadow-2xl hover:scale-105 transition-all flex items-center gap-2"
+          aria-label="Open the portfolio assistant"
+          className="group relative inline-flex items-center gap-2.5 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 py-3 pl-3 pr-5 text-sm font-medium text-white shadow-2xl shadow-indigo-500/30 transition duration-300 ease-spring hover:-translate-y-0.5 hover:brightness-110 active:scale-95"
         >
-          <span className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg font-bold">🤖</span>
-          <span>Chat</span>
+          <SparkMark className="absolute inset-0 -z-10 h-full w-full animate-halo opacity-60" />
+          <SparkMark className="h-8 w-8" />
+          <span>Ask me anything</span>
         </button>
       </div>
     );
@@ -62,47 +96,65 @@ export default function ChatWidget() {
 
 
   return (
-    <div className="fixed bottom-6 right-6 w-[380px] max-w-[98vw] rounded-3xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 shadow-2xl overflow-hidden z-50 flex flex-col">
-      {/* Header with avatar and title */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-neutral-900 to-neutral-700">
-        <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-2xl">🤖</span>
-          <div>
-            <p className="text-base font-bold text-white">Portfolio Assistant</p>
-            <p className="text-xs text-neutral-200">Ask about experience, stack, contact</p>
+    <div className="fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[384px]">
+      <div className="animate-pop-in flex origin-bottom-right flex-col overflow-hidden rounded-3xl border border-neutral-200/80 bg-white/95 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/95">
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-4 py-3.5">
+          <div className="flex min-w-0 items-center gap-3">
+            <SparkMark className="h-9 w-9" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">Portfolio Assistant</p>
+              <p className="truncate text-[11px] text-white/70">
+                Ask about experience, stack or contact
+              </p>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={clear}
+              className="rounded-lg px-2 py-1 text-[11px] font-medium text-white/80 transition hover:bg-white/15 hover:text-white"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/15 hover:text-white"
+              aria-label="Close chat"
+              title="Close"
+            >
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4"
+              >
+                <path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" />
+              </svg>
+            </button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={clear} className="text-xs text-neutral-200 hover:text-white">Clear</button>
-          <button
-            onClick={() => {
-              clear();
-              setIsOpen(false);
-            }}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-800/30 transition"
-            aria-label="Close chat"
-            title="Close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-neutral-200 hover:text-white">
-              <path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-      </div>
 
       {/* Chat area */}
-      <div ref={listRef} className="flex-1 px-4 py-4 space-y-3 bg-neutral-50 dark:bg-neutral-950">
+        <div
+          ref={listRef}
+          aria-live="polite"
+          className="h-[min(50vh,340px)] space-y-3 overflow-y-auto bg-neutral-50/60 px-4 py-4 dark:bg-neutral-950/40"
+        >
         {messages.length === 0 ? (
-          <div className="space-y-2 text-center">
+            <div className="space-y-3 py-2 text-center">
             <p className="text-sm text-neutral-700 dark:text-neutral-300">
-              Hi! I can answer questions about Reyvand’s portfolio.
+                Hi — I can answer questions about Reyvand’s work, stack and availability.
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap justify-center gap-2">
               {suggested.map((s) => (
                 <button
+                  type="button"
                   key={s}
                   onClick={() => send(s)}
-                  className="text-xs rounded-full border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 px-3 py-1 hover:bg-neutral-100 shadow-sm"
+                  className="rounded-full border border-neutral-200 bg-white/80 px-3 py-1.5 text-xs text-neutral-700 shadow-sm transition duration-300 ease-swift hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-neutral-200 dark:hover:border-indigo-400/40 dark:hover:text-indigo-200"
                 >
                   {s}
                 </button>
@@ -117,28 +169,37 @@ export default function ChatWidget() {
             className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
           >
             <div
-              className={`relative max-w-[90%] px-4 py-2 rounded-2xl shadow-sm text-sm whitespace-pre-line ${
+              className={`max-w-[88%] whitespace-pre-line rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                 m.role === "user"
-                  ? "bg-gradient-to-br from-neutral-900 to-neutral-700 text-white"
-                : "bg-white text-neutral-900 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700"
+                ? "rounded-br-md bg-gradient-to-br from-indigo-500 to-violet-600 text-white"
+                : "rounded-bl-md border border-neutral-200 bg-white text-neutral-900 dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-100"
               }`}
             >
               {m.text}
-              <span className="absolute -bottom-5 right-2 text-[10px] text-neutral-400">
-                {formatTime(
-                  typeof m.createdAt === "number"
-                    ? new Date(m.createdAt).toISOString()
-                    : m.createdAt
-                )}
-              </span>
             </div>
+            <span className="mt-1 px-1 font-mono text-[9px] text-neutral-400 dark:text-neutral-500">
+              {formatTime(
+                typeof m.createdAt === "number"
+                  ? new Date(m.createdAt).toISOString()
+                  : m.createdAt
+              )}
+            </span>
           </div>
         ))}
 
         {isSending ? (
-          <div className="flex items-center gap-2 animate-pulse">
-            <span className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-lg">🤖</span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">Assistant is typing…</span>
+            <div className="flex items-center gap-2">
+              <SparkMark className="h-7 w-7" />
+              <span className="flex items-center gap-1 rounded-2xl rounded-bl-md border border-neutral-200 bg-white px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.06]">
+                {[0, 1, 2].map((dot) => (
+                  <span
+                    key={dot}
+                    className="h-1.5 w-1.5 animate-bounce-dot rounded-full bg-indigo-400"
+                    style={{ animationDelay: `${dot * 160}ms` }}
+                  />
+                ))}
+                <span className="sr-only">The assistant is typing</span>
+              </span>
           </div>
         ) : null}
 
@@ -153,17 +214,21 @@ export default function ChatWidget() {
           send(v);
           resetInput();
         }}
-        className="flex gap-2 px-4 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
+          className="flex items-end gap-2 border-t border-neutral-200/80 bg-white/80 px-3 py-3 dark:border-white/10 dark:bg-transparent"
       >
+          <label htmlFor="chat-input" className="sr-only">
+            Ask a question
+          </label>
         <textarea
+            id="chat-input"
           ref={taRef}
           value={text}
           onChange={(e) => {
             setText(e.target.value);
             autoGrow();
           }}
-          placeholder="Type your question and press Enter…"
-          className="flex-1 rounded-xl border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-200 resize-none overflow-hidden min-h-[38px] max-h-32"
+            placeholder="Ask a question…"
+            className="min-h-[40px] max-h-32 flex-1 resize-none overflow-hidden rounded-xl border border-neutral-200 bg-white/70 px-3 py-2.5 text-sm outline-none transition focus:border-indigo-400 dark:border-white/10 dark:bg-white/[0.05] dark:text-neutral-100 dark:focus:border-indigo-400/60"
           rows={1}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -175,8 +240,11 @@ export default function ChatWidget() {
             }
           }}
         />
-        <Button type="submit" className="h-10 px-5">{isSending ? <span className="animate-pulse">…</span> : "Send"}</Button>
+          <Button type="submit" size="sm" className="h-10 px-4" disabled={isSending}>
+            {isSending ? "…" : "Send"}
+          </Button>
       </form>
+      </div>
     </div>
   );
 }

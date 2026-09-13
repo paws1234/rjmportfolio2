@@ -2,13 +2,278 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Design tokens
+   One accent family, one easing curve, one reveal rhythm. Anything that
+   animates reads its timing from here so the whole page feels of a piece.
+   ========================================================================== */
 :root {
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-swift: cubic-bezier(0.4, 0, 0.2, 1);
+    --reveal-delay: 0ms;
+    --accent: #6366f1;
+    --accent-warm: #d946ef;
+    --accent-cool: #22d3ee;
   color-scheme: light;
 }
 
 .dark {
   color-scheme: dark;
 }
-html, body {
-  height: 100%;
+html,
+body {
+  min-height: 100%;
 }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.26);
+}
+
+.dark ::selection {
+  background: rgba(129, 140, 248, 0.32);
+}
+
+/* A single visible focus treatment for the whole page, rather than one per
+   component. Only shows for keyboard users. */
+:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.75);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+.dark :focus-visible {
+  outline-color: rgba(165, 180, 252, 0.75);
+}
+
+/* Firefox */
+* {
+  scrollbar-color: rgba(115, 115, 115, 0.4) transparent;
+  scrollbar-width: thin;
+}
+
+/* WebKit */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(115, 115, 115, 0.32);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(115, 115, 115, 0.55);
+  background-clip: content-box;
+}
+
+/* ==========================================================================
+   Scroll reveal
+   Visible by default so the page is complete without JavaScript; the only
+   states that hide anything are the ones a client component sets on mount,
+   and only for content that is still below the fold.
+   ========================================================================== */
+
+.reveal {
+  --reveal-delay: 0ms;
+}
+
+.reveal[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+
+.reveal[data-reveal="shown"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s var(--ease-spring) var(--reveal-delay),
+    transform 0.7s var(--ease-spring) var(--reveal-delay);
+}
+
+/* ==========================================================================
+   Surfaces
+   ========================================================================== */
+
+/* A 1px gradient hairline that fades in under the pointer. Drawn with a
+   masked pseudo-element so the card keeps its own background and radius. */
+.surface {
+  position: relative;
+  isolation: isolate;
+  transition:
+    transform 0.45s var(--ease-spring),
+    border-color 0.45s var(--ease-swift),
+    box-shadow 0.45s var(--ease-swift);
+}
+
+.surface::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.7),
+      rgba(217, 70, 239, 0.35) 45%,
+      rgba(34, 211, 238, 0.6));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease-swift);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .surface:hover {
+    transform: translateY(-2px);
+  }
+
+  .surface:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Cursor-tracked glow. The client sets --mx/--my; nothing happens until it
+   does, so this degrades to a plain surface. */
+.spotlight {
+  position: relative;
+}
+
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(480px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(99, 102, 241, 0.14),
+      transparent 62%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-swift);
+  pointer-events: none;
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+.dark .spotlight::before {
+  background: radial-gradient(480px circle at var(--mx, 50%) var(--my, 0%),
+      rgba(129, 140, 248, 0.18),
+      transparent 62%);
+}
+
+/* ==========================================================================
+   Decorative layers
+   ========================================================================== */
+
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.028;
+  pointer-events: none;
+}
+
+.dark .grain::after {
+  opacity: 0.038;
+}
+
+/* Fades the edges of anything that should not have a hard edge. */
+.edge-fade {
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+
+.text-gradient {
+  background-image: linear-gradient(100deg,
+      var(--accent) 0%,
+      var(--accent-warm) 42%,
+      var(--accent-cool) 78%,
+      var(--accent) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animated underline for inline links: grows from the left on hover. */
+.link-quiet {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.35s var(--ease-swift);
+}
+
+.link-quiet:hover {
+  background-size: 100% 1px;
+}
+
+/* A horizontally scrolling strip that should not advertise itself as one. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==========================================================================
+   Motion preferences
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .surface:hover {
+    transform: none;
+  }
+}
+

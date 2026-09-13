@@ -1,28 +1,52 @@
 import { resume } from "@/data/resume";
 import { Card } from "@/components/ui";
 
+/**
+ * A timeline, because roles are a sequence and the sidebar is too narrow for
+ * the horizontal layout this used to have. The line fades out at the bottom so
+ * the list does not appear to stop abruptly.
+ */
 export default function Experience() {
   return (
-    <Card title="Experience">
-      <div className="space-y-5">
-        {resume.experience.map((e) => (
-          <div key={e.role} className="flex gap-3">
-            <div className="mt-1 h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-500 shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-baseline justify-between gap-3 flex-wrap">
-                <p className="text-sm font-semibold min-w-0">{e.role}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap shrink-0">{e.period}</p>
-              </div>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">{e.company}</p>
-              <ul className="mt-2 list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-                {e.highlights.map((h) => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ul>
+    <Card id="experience" title="Experience" delay={80}>
+      <ol className="relative space-y-6">
+        <span
+          aria-hidden="true"
+          className="absolute bottom-2 left-[5px] top-2 w-px bg-gradient-to-b from-indigo-500/70 via-neutral-200 to-transparent dark:via-white/10"
+        />
+
+        {resume.experience.map((entry) => (
+          <li key={`${entry.role}-${entry.company}`} className="relative pl-6">
+            <span
+              aria-hidden="true"
+              className="absolute left-0 top-1.5 h-[11px] w-[11px] rounded-full border-2 border-white bg-indigo-500 shadow-[0_0_0_3px_rgba(99,102,241,0.15)] dark:border-neutral-900"
+            />
+
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <p className="text-sm font-semibold tracking-tight">{entry.role}</p>
+              <p className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
+                {entry.period}
+              </p>
             </div>
-          </div>
+            <p className="text-sm text-indigo-600 dark:text-indigo-300">{entry.company}</p>
+
+            <ul className="mt-2.5 space-y-1.5">
+              {entry.highlights.map((highlight) => (
+                <li
+                  key={highlight}
+                  className="flex gap-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-neutral-300 dark:bg-neutral-600"
+                  />
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          </li>
         ))}
-      </div>
+      </ol>
     </Card>
   );
 }

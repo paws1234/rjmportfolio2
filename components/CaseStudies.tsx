@@ -20,7 +20,9 @@ export default function CaseStudies() {
 
     return (
         <Card
+            id="case-studies"
             title="Case Studies"
+            delay={140}
             action={<Count n={studies.length} singular="case study" plural="case studies" />}
         >
             <ProjectList items={studies} />

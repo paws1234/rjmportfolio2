@@ -15,7 +15,12 @@ export default function Projects() {
     const live = projects.filter((p) => Boolean(p.liveUrl));
 
     return (
-        <Card title="Projects" action={<Count n={live.length} singular="project" plural="projects" />}>
+        <Card
+            id="projects"
+            title="Projects"
+            delay={100}
+            action={<Count n={live.length} singular="project" plural="projects" />}
+        >
             <ProjectList items={live} />
         </Card>
     );

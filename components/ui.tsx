@@ -1,28 +1,61 @@
 import React from "react";
+import Reveal from "@/components/Reveal";
+
+/**
+ * The page's three primitives. Sections are `Card`s, tags are `Pill`s and
+ * anything clickable that is not a link is a `Button`, so a change to the
+ * surface treatment or the focus ring happens in one place.
+ */
 
 export function Card({
+  id,
   title,
   children,
-  action
+  action,
+  delay = 0,
+  className = ""
 }: {
+    /** Anchor target for the sticky nav. */
+    id?: string;
   title: string;
   children: React.ReactNode;
   action?: React.ReactNode;
+    /** Entrance stagger in milliseconds, so a column of cards arrives in order. */
+    delay?: number;
+    className?: string;
 }) {
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
-        {action ? <div>{action}</div> : null}
-      </div>
-      <div className="px-5 py-4">{children}</div>
-    </section>
+    <Reveal id={id} delay={delay} className="scroll-mt-24">
+      <section
+        className={`surface overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/75 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_-16px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-neutral-900/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.4),0_18px_40px_-20px_rgba(0,0,0,0.7)] ${className}`}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-neutral-200/70 px-5 py-4 dark:border-white/[0.07]">
+          <h2 className="flex items-center gap-2.5 text-sm font-semibold tracking-tight">
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-[0_0_0_3px_rgba(99,102,241,0.14)]"
+            />
+            {title}
+          </h2>
+          {action ? <div className="shrink-0">{action}</div> : null}
+        </div>
+        <div className="px-5 py-4">{children}</div>
+      </section>
+    </Reveal>
   );
 }
 
-export function Pill({ children }: { children: React.ReactNode }) {
+export function Pill({
+  children,
+  className = ""
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+    <span
+      className={`inline-flex items-center rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-xs text-neutral-700 transition duration-300 ease-swift hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-200 dark:hover:border-indigo-400/40 dark:hover:text-indigo-200 ${className}`}
+    >
       {children}
     </span>
   );
@@ -32,29 +65,46 @@ export function Button({
   children,
   onClick,
   variant = "solid",
+  size = "md",
   type = "button",
-  className = ""
+  className = "",
+  ariaLabel,
+  disabled = false
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "solid" | "ghost";
+    size?: "sm" | "md";
   type?: "button" | "submit";
   className?: string;
+    ariaLabel?: string;
+    disabled?: boolean;
 }) {
   const base =
-    "inline-flex items-center justify-center rounded-xl px-3.5 py-2 text-sm font-medium transition";
+    "group relative inline-flex select-none items-center justify-center gap-2 overflow-hidden rounded-xl font-medium transition duration-300 ease-spring active:scale-[0.97] disabled:opacity-60";
+  const sizing = size === "sm" ? "px-3 py-1.5 text-xs" : "px-3.5 py-2 text-sm";
   const solid =
-    "bg-neutral-900 text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200";
+    "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/35 hover:brightness-110 dark:shadow-indigo-900/40";
   const ghost =
-    "bg-white text-neutral-800 border border-neutral-200 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800";
+    "border border-neutral-200 bg-white/60 text-neutral-800 hover:border-neutral-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-100 dark:hover:border-white/20 dark:hover:bg-white/[0.08]";
 
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${base} ${variant === "solid" ? solid : ghost} ${className}`}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      className={`${base} ${sizing} ${variant === "solid" ? solid : ghost} ${className}`}
     >
-      {children}
+      {variant === "solid" ? (
+        // A light sweep on hover. Transform-only, so it never triggers layout.
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 -translate-x-[240%] -skew-x-12 bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-swift group-hover:translate-x-[440%]"
+        />
+      ) : null}
+      <span className="relative flex items-center gap-2">{children}</span>
     </button>
   );
 }
+

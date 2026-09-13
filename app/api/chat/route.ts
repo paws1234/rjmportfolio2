@@ -16,6 +16,7 @@ Title: ${resume.title}
 Location: ${resume.location}
 Email: ${resume.email}
 Phone: ${resume.phone}
+Resume, as a link you may share when asked: ${resume.links[0]?.href ?? "not available"}
 
 Experience:
 ${resume.experience.map(e => `- ${e.role} @ ${e.company} (${e.period}): ${e.highlights.join("; ")}`).join("\n")}
