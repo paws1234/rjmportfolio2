@@ -2,7 +2,8 @@ import Header from "@/components/Header";
 import About from "@/components/About";
 import TechStack from "@/components/TechStack";
 import Experience from "@/components/Experience";
-import Projects, { CaseStudies } from "@/components/Projects";
+import Projects from "@/components/Projects";
+import CaseStudies from "@/components/CaseStudies";
 import Contact from "@/components/Contact";
 import ChatWidget from "@/components/ChatWidget";
 

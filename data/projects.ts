@@ -488,5 +488,126 @@ export const projects: Project[] = [
       "The pair is deployed and was checked as a pair rather than as two repositories: the SPA answers 200 on Vercel, the API's key endpoint answers 200 with the key it is currently using, and a login with deliberately wrong credentials comes back 401 carrying an encrypted envelope — which is the whole contract working in one request, since that body had to be encryptable and the front end's copy of the key has to match it. The same check turned up something less flattering: an unauthenticated request to a protected route answers 500 with an HTML error page rather than a 401 in the API's own format. A visitor never sees it, because the app catches the failure and shows a message, but it is the kind of thing worth catching before a stranger does.",
       "What the project is really about, in the end, is where a decision is allowed to live. The browser holds a token and a route table and decides nothing else; the API owns the records, the roles and the marking; and the only thing genuinely shared between two deployments hosted by two companies is a key they both have to agree on. Both repositories are in the MIT-licensed open, documentation included — the deploys, the environment variables and the unfinished parts."
     ]
+  },
+  {
+    id: "tradingbot",
+    name: "TradingBot",
+    tagline: "An FX bot that has to decide, on its own, when not to trade — four strategies, three gates and an AI veto standing between a signal and an order.",
+    role: "Sole engineer on the repository, built with a model in the loop: the strategy specification and the plans are mine, and the code was written through a plan, task, branch and pull-request loop with Copilot as a credited contributor. The git history and the plans folder are the record of that, including which tasks are still open.",
+    status: "No deployment to open, which is why it is filed here. The repository carries a Render blueprint and a runbook for an OANDA practice account, but no service is up — and there would be little to see if there were, because the app exposes only a liveness probe and a status document, and it refuses to start at all without five live credentials. Everything below came from reading and executing the code, not from a funded account.",
+    repoUrl: "https://github.com/paws1234/tradingbot",
+    summary:
+      "TradingBot is an algorithmic trading service for FX and metals: it streams OANDA prices and Finnhub headlines, builds M15 candles from them, runs four strategies over the closed bars, and then asks whether the trade is permitted. A circuit breaker, a news blackout and a DeepSeek veto all stand between a signal and an order; the size is derived from the stop distance at 1% of balance; and the order goes out as a MARKET order with its stop and target attached, so the position is never open without a floor under it. Every decision — including the ones that never became orders — is written to MongoDB. What makes it a case study rather than a demo is that almost all of its engineering is refusal: a strategy document fixes the rules, every rolling window is shifted a bar so a signal can only see what was knowable at bar close, an AI gate that is unavailable is treated as an outage rather than as a no, and sizing answers a bad request with nothing instead of rounding down to something placeable. The failure it is designed against is not a bad trade. It is a bot that keeps trading after it has stopped being able to see.",
+    metrics: [
+      { label: "Tests passing", value: "279" },
+      { label: "Strategies", value: "4" },
+      { label: "Indicators", value: "12" },
+      { label: "Test-to-app lines", value: "1.6×" }
+    ],
+    brief: [
+      "An unattended trading process is a program that can lose money while nobody is looking, which changes what the engineering has to be. The entry conditions are the easy half and the least interesting one: four strategies with fixed parameters, each a handful of inequalities over pandas columns. The half worth building is the sequence after a signal appears, because that is where the money is actually protected — who is allowed to stop trading, what happens when the calendar feed that feeds the news filter cannot be reached, whether an AI gate that failed to answer counts as permission, and what a size calculation should do when the answer it computed is not placeable.",
+      "The second constraint was that none of this could be verified against a broker on the day it was written: there was no funded account, and pointing a first draft at live money to see if it worked is not a testing strategy. So the rules had to be provable offline. That is why the test suite is larger than the application it tests, why the entire external surface is mocked rather than assumed, and why the strategy rules were written down first — as a specification with exact thresholds and worked formulas — and then diffed against the code that implements them. A trading strategy that exists only inside an if-statement is a strategy nobody can review."
+    ],
+    built: [
+      "A FastAPI service with an asyncio engine. Its lifespan owns the construction and the teardown of every client, and an injected engine is used as-is, which is the seam that lets the entire test suite run without a single real network client being built.",
+      "An OANDA v20 integration with two halves that behave differently on purpose: candles, account summary and order placement over REST, and the pricing stream over chunked NDJSON with its own reconnect loop, doubling backoff capped at 30 seconds, and explicit handling of the difference between a price frame and a heartbeat.",
+      "A news feed that probes Finnhub's websocket once and falls back to REST polling when the probe comes back empty — which is what the free tier actually does — and answers Finnhub's application-level ping frames itself, because the websocket library only auto-replies to the protocol-level ones. The whole feed runs off the trade path: if it dies, a log line is the only consequence.",
+      "A ForexFactory calendar scraper, because no API exists for it: httpx and BeautifulSoup against the public week view, three attempts with backoff that also treat a page parsing to zero rows as a failure, a desktop user agent because the default one is refused, Eastern time converted in both daylight states through the timezone database, a high-impact filter, and a JSON override in the environment that wins over the scrape.",
+      "Twelve indicator helpers as pure pandas functions — Wilder RSI, ATR, ADX, Bollinger with a population standard deviation, a shifted Donchian channel, fair-value-gap predicates, a session range, and the M15-to-H1 resample — with no state, no settings and no I/O, so each can be checked against a hand-computed number.",
+      "Four strategies as the specification defines them: an Asia-range sweep with a fair-value-gap confirmation, an EMA trend-join gap entry, an ATR squeeze breakout on a Donchian channel, and a Bollinger mean reversion gated by ADX. Their parameters are constants in the source with the specification's section cited beside each group, and each strategy also ships the predicate that decides when its setup no longer exists.",
+      "Stage-two filters as local rules before any model is consulted: a circuit breaker on the day's realised loss that halts the account at 3% and is sticky once tripped, and a news blackout built from the calendar that opens a window of plus or minus 30 minutes around high-impact events.",
+      "The AI veto as a gate rather than an assistant. DeepSeek is asked for one JSON object — execute, confidence, reason — under a forced JSON response format, with the SDK's own retries switched off so backoff lives in one place, a retryable-error list that distinguishes a timeout from an auth failure, and a fail-safe verdict whose reason is prefixed so the engine can tell an outage apart from a genuine refusal.",
+      "Sizing that refuses instead of clamping: the whole-unit size is truncated rather than rounded so the stake can never exceed the risk budget, it must fall inside the instrument's unit bounds, and its notional must fit the account's available margin — three separate ways to return nothing, each of which the engine records as an unsized outcome and moves past.",
+      "State in four MongoDB collections — the day's context, the account baseline, every signal, and every decision and order — with the audit trail deliberately written for the refusals too, so a trade the bot declined to take is as visible afterwards as one it took.",
+      "Packaging and delivery: a python:3.12-slim image running as a non-root user with a healthcheck that honours an injected port, a Render blueprint that declares five secrets as dashboard-supplied so they are never committed, a free-tier plan whose sleep is defeated by an external five-minute ping to the same path the platform checks, and a CI workflow that runs the suite on Python 3.12 and builds the image on every push."
+    ],
+    architecture: [
+      {
+        layer: "The service",
+        detail: "FastAPI with two routes and a lifespan that builds every client, starts the engine and the scheduler, and closes them in a fixed order. Configuration is validated once, at import, so a missing credential crash-loops the container instead of starting half-configured."
+      },
+      {
+        layer: "The engine",
+        detail: "One asyncio task per instrument driving a price stream, plus one for news. Work is triggered by a closed candle rather than by a clock, and every await is wrapped so that one bad candle or one bad signal cannot kill the stream behind it."
+      },
+      {
+        layer: "The strategies",
+        detail: "Pure pandas over the last thousand bars, with no settings object and nothing asynchronous. The registry maps an instrument to the strategies that suit it, and the document that specifies the rules is the only reason those constants can be reviewed."
+      },
+      {
+        layer: "The gates",
+        detail: "In order: duplicate setup, circuit breaker, news blackout, then the AI veto, then a confidence threshold. Only three of the seven outcomes free the setup for a retry, and which three is the whole design."
+      },
+      {
+        layer: "Sizing and dispatch",
+        detail: "Risk amount over stop distance, truncated, bounded per instrument and against available margin, then signed by direction and sent as a fill-or-kill market order carrying its stop and target."
+      },
+      {
+        layer: "State",
+        detail: "MongoDB Atlas through Motor. Two collections are read back by the application; the other two are append-only audit that only a human or a database client ever looks at."
+      },
+      {
+        layer: "Delivery",
+        detail: "One container on a free Render web service, with the process held awake by an external monitor and its five secrets filled in by hand, which is the part of the deployment that cannot be automated away."
+      }
+    ],
+    decisions: [
+      {
+        title: "The strategy rules are constants in the source, with the specification cited beside them.",
+        detail: "Every threshold — the 0.82 squeeze multiplier, the 40-to-53 RSI band, the 28 and 72 mean-reversion extremes, the 1.8 ATR stop — is a frozen constant, and the document that defines it is the specification the code is checked against. Freezing them is what makes a reviewed rule and a running rule the same rule. The honest cost is that five environment variables still advertise themselves as tuning knobs, are validated, documented and set in the deployment blueprint, and are read by nothing: the blueprint asks for an RSI 30 over 70 while the code uses 28 over 72. In a trading system that is the worst kind of dead configuration, because an operator who tunes it gets a confirmed, accepted, silently ignored value."
+      },
+      {
+        title: "Lookahead safety is a property of how the windows are built, and it has tests.",
+        detail: "The most expensive bug in this class of program is a signal that quietly reads the future: it makes every measurement of performance a fiction and it never throws. So the Donchian channel and the swing extremes are shifted a bar before they roll, the swept high in the Asia strategy is a running maximum so today's stop can never be set from a later bar, and the hourly trend filter is shifted and then joined backwards onto the fifteen-minute frame rather than merged as of its own bar. None of that is left to care — there are dedicated tests that assert each one stays that way, and the backfill is requested as closed bars only."
+      },
+      {
+        title: "The model may veto a trade, and may never size one.",
+        detail: "DeepSeek is asked a yes-or-no question about a candidate the strategies already produced, and its answer is used for exactly two things: the boolean and the confidence, which is compared against a threshold. It cannot adjust the size, move the stop, change the direction or invent a trade, because the order is built from the original signal and the decision never reaches the sizing function at all. The prompt is deliberately narrow — it sees a summary of the trade and nothing else, no news, no calendar, no balance, no history — because a gate that cannot see the account cannot be talked into spending it."
+      },
+      {
+        title: "A gate that failed is not a gate that said no.",
+        detail: "The two are mechanically distinguishable: an unavailable gate returns a fail-safe verdict stamped with a marker prefix, and a genuine refusal is a plain no. The engine treats them oppositely. A fail-safe frees the setup so the next closed candle asks again once the gate has recovered; a real veto leaves the setup pending for the rest of the day, and only that strategy's own invalidation predicate or the day rollover can release it. Collapsing those two into one false would mean a network blip silently deciding the day's trading, or a model's opinion being retried until it changes its mind."
+      },
+      {
+        title: "Sizing refuses rather than clamping.",
+        detail: "When the computed size falls outside an instrument's unit bounds, or its notional does not fit the available margin, the order builder returns nothing and the engine records an unsized outcome. It never rounds up to a minimum lot and never trims to fit, because both of those turn a sizing disagreement into a live position nobody chose. The truncation points the same way: the size is floored, so the stake can only come in under the risk budget and never over it. The cost is visible in the arithmetic — the guard compares full notional against available margin rather than the instrument's actual margin requirement, and against a ten-unit floor on gold that is enough to refuse every order on a five-figure practice balance. A bot that declines to trade is behaving correctly; a bot that trades something it did not size is not."
+      },
+      {
+        title: "A blind news filter means more trading, not less.",
+        detail: "The calendar is a scrape of a public page behind a bot check, so it is the least reliable input in the system. When it fails, the client logs the reason and returns an empty list, the blackout filter then has no windows and therefore blocks nothing, and the bot trades through the day's biggest announcements with no idea they are coming. This is the one failure in the system that points the wrong way, and it is recorded as such — three times, in the code, the plan and the documentation — rather than left for someone to discover from a loss. The right answer is either a cached last-known-good calendar or a refusal to trade when the day's context is unknown; what the code does today is choose to keep trading, and say so."
+      },
+      {
+        title: "One environment variable is the entire distance to real money.",
+        detail: "The account type is a two-value literal defaulting to practice, and it does nothing except select which host each OANDA client talks to. There is no second confirmation flag, no cross-check that the credentials match the declared mode, and no refusal to start. Everything else in the system is built defensively — fail-safe verdicts, refusal-shaped sizing, stops attached to every order — and then the last step is a string that a deployment can flip. It is documented in the README and the environment example as a thing to leave alone, and documentation is not enforcement. That gap is the first thing I would close, because it is the only one where the system trusts an operator instead of itself."
+      }
+    ],
+    stack: [
+      "Python 3.12",
+      "FastAPI",
+      "asyncio",
+      "APScheduler",
+      "pandas",
+      "NumPy",
+      "pydantic v2",
+      "httpx",
+      "websockets",
+      "BeautifulSoup",
+      "Motor",
+      "MongoDB Atlas",
+      "OANDA v20 API",
+      "Finnhub",
+      "ForexFactory",
+      "DeepSeek",
+      "Docker",
+      "Render",
+      "pytest",
+      "respx",
+      "GitHub Actions"
+    ],
+    outcome: [
+      "The suite is the evidence, and I ran it rather than trusting the badge: 279 tests collected and 279 passing in about two seconds, from 233 test functions, across thirteen test files. Every one of the fifteen real application modules has its own test file, and the testing code is 5,115 lines against 3,187 lines of application code. Nothing real is contacted — HTTP is intercepted, the websocket is injected, the MongoDB client is a hand-written fake that records its calls, and the OpenAI client is swapped for a stub — which is the only reason a two-second run can cover a pipeline that otherwise depends on five external services. The rules themselves were checked the other way round, by reading the strategy specification and diffing its thresholds against the constants in the code, and they agree.",
+      "The gaps are as specific as the results, and I would rather they be read here than found later. It has never placed a real order: no live call was made to OANDA, DeepSeek or the calendar, so the integrations are verified against fixtures and not against the world. Five environment variables are declared, documented and ignored, and the deployment blueprint sets them to values the code does not use. An order that the broker rejects is the one path that misses the audit trail, because a fill-or-kill order that cannot fill returns no order transaction and the parser raises before anything is logged — which is the common outcome for that order type, not an edge case. There are no database indexes and no single-instance guard, so two replicas would each run a full pipeline against the same account and nothing downstream would notice. The hourly trend filter is warmed from five hundred bars when its slowest average needs about a thousand, and because the exponential average returns a number from its first bar rather than a gap, it starts out confidently wrong. And the specification describes riding a breakout with a trailing stop while the code only ever places entries with a stop and a target attached — there is no exit management at all, which is a documented scope decision that reads like an omission until you find it in the plan.",
+      "What I took from it: in a system that spends money unattended, the interesting decisions are all negative ones. Whether an absent answer is permission, whether a failed input disables a guard or removes it, whether an unplaceable size becomes the smallest allowed trade or no trade at all — each of those is a one-line choice with a symmetric-looking alternative, and getting them wrong is not a crash, it is a behaviour. Writing the rules down first and then diffing the code against them is what made that reviewable, and it is also what turned up the five settings nobody reads."
+    ]
   }
 ];
