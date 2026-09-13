@@ -23,7 +23,6 @@ export type Project = {
   /** Stable slug. Used as the React key and for the accordion's aria wiring. */
   id: string;
   name: string;
-  year: string;
   /** One line, shown while the entry is collapsed. */
   tagline: string;
   /** What I was responsible for on this project. */
@@ -54,7 +53,6 @@ export const projects: Project[] = [
     id: "vapestack",
     name: "Vapestack",
     tagline: "A headless commerce storefront — Next.js in front, WooCommerce and WPGraphQL behind.",
-    year: "2026",
     role: "Sole engineer: the WooCommerce backend, the Next.js storefront, the payment flow, the deployment, and the UI standards the storefront is held to.",
     status: "Live demo. WordPress runs on my own machine behind a Cloudflare tunnel, so while that tunnel is closed the storefront serves its last cached catalogue, product photographs do not load, and checkout says so instead of pretending.",
     liveUrl: "https://vapestack.vercel.app/",
@@ -160,7 +158,6 @@ export const projects: Project[] = [
     id: "quiz-maker",
     name: "Quiz Maker",
     tagline: "Build a quiz, share a link, see how people did — Next.js, a GraphQL API and MongoDB.",
-    year: "2026",
     role: "Sole engineer: the GraphQL schema and resolvers, the builder and the player, the MongoDB model, the validation layer, the Docker setup, and the deployment.",
     status: "Live and in use. The published quizzes are open to anyone, but the builder is locked to me behind an admin token — the demo quizzes are there to take rather than to edit.",
     liveUrl: "https://quizmaker-teal.vercel.app/",
@@ -266,7 +263,6 @@ export const projects: Project[] = [
     id: "bookify",
     name: "Bookify",
     tagline: "A self-hosted booking and ticketing site — WordPress and one plugin, a diary that cannot double-book a place, and a Postgres copy that rebuilds the site on a host with no shell.",
-    year: "2026",
     role: "Sole engineer: the booking plugin, the child theme's design layer, the Elementor layouts, the payments and email paths, the Docker image, the deploy, and the PostgreSQL mirror.",
     status: "Live on Render's free plan, which shapes how it behaves. An idle instance is spun down, so the first visit waits while it rebuilds itself — measured at 46 seconds from cold — and the filesystem is wiped on every restart, so the session photographs come back from the database copy as they are asked for. Payments run in Stripe test mode and the business details in the database are a placeholder studio, so this is a demonstration rather than a business.",
     liveUrl: "https://bookify-tgpz.onrender.com/",
@@ -375,6 +371,117 @@ export const projects: Project[] = [
     outcome: [
       "It is live, and its numbers were taken rather than estimated. A container starting against an empty database and an empty volume rebuilt the whole site from the copy — installing WordPress, restoring 713 rows and serving the real home page with every image fetched from PostgreSQL on first request. Every one of 4,240 restored values was compared against the copy and found identical, 32 image files were decoded and hashed against the originals with none differing, and the mirror alone carries 124 assertions across five re-runnable probes. The gaps are stated as plainly as the results: a free instance has no disk and no cron, so reminders and event summaries only run if a page view happens to arrive; Elementor is pinned to a beta because that is the version the design layer was measured against; and the repository's own pre-launch list — replace the placeholder business details, empty the mail redirect, verify a sending domain, remove the test keys, delete the probe bookings — is still open.",
       "What I took from building it: a booking system is not a form with a database behind it, it is a disagreement about authority. Who owns the free times, who gets the last place, who is allowed to say that money arrived, and what the site may still do once nothing else is reachable — every hard decision here was one of those, and the code is shortest exactly where an answer was settled once and then obeyed everywhere else."
+    ]
+  },
+  {
+    id: "ctu-lms",
+    name: "CTU LMS",
+    tagline: "A school management system delivered as two deployments — a Laravel API on Render and a Vue 3 single-page app on Vercel, talking to each other in ciphertext.",
+    role: "A team project across two repositories, and I am one of the contributors listed on both. This case study covers the system as a whole: the Laravel API and its data model, the encrypted transport between the two halves, the role boundaries, and the single-page app that serves all three areas.",
+    status: "Live demo, with the hosted API asleep until someone knocks. It runs on Render's free plan, so a first request after a quiet spell waits while it wakes — and the app sets no request timeout, so a cold login spins rather than fails. Registration on the API is open, so a student account can be created from the deployed site; the admin and teacher sides need an account that exists in the database.",
+    liveUrl: "https://ctu-lms.vercel.app/",
+    repoUrl: "https://github.com/paws1234/lmsfrontend",
+    summary:
+      "CTU LMS is the school management system for Cebu Technological University: student and teacher records, courses, class schedules, subjects, enrolments, events, announcements, question sheets, and the scores that come back from them. It ships as two applications that are deployed separately and never share a process — a Laravel API on Render that owns every record and every rule, and a Vue 3 single-page app on Vercel that owns the interface for three different roles. What makes it worth reading is not the CRUD, which is ordinary, but that the two halves cannot drift: every response is encrypted, the key is published by one endpoint precisely so both deployments can be checked against each other, and the server is the only place a permission is ever enforced. The repositories document their own rough edges as carefully as their features, which is why the awkward parts below are quoted rather than discovered.",
+    metrics: [
+      { label: "Migrations", value: "18" },
+      { label: "Database tables", value: "15" },
+      { label: "Routed screens", value: "32" },
+      { label: "Roles", value: "3" }
+    ],
+    brief: [
+      "A school does not need another form, it needs one place where a record is true. The same student appears in a class list, an enrolment, a schedule, a submission and a score, and those five things stop agreeing the moment two of them are allowed to be edited independently. The first version of that problem is the data model: an account, and then a profile row that other tables can point at.",
+      "The constraint that shaped the rest is that the two halves are hosted by two different companies and released separately, so nothing may be assumed about the other side at build time. The response to that is a contract instead of a convention: every JSON body is encrypted with a key both halves hold, and since a key that drifts breaks login with a decryption error rather than a credentials error, the API exposes the key it is currently using on a single unencrypted endpoint. Whoever deploys either half can ask the other what it is holding before believing a bug report."
+    ],
+    built: [
+      "A Laravel 10 API on PHP 8.2 with Sanctum bearer tokens and a role middleware in front of every route: public register, login and a key probe; a signed-in user and logout; then four surfaces — admin for students, teachers, courses, schedules and events, teacher for their own subjects, the student and subject pickers, enrolments, announcements, question sheets and dashboard tiles, and student for tasks, submissions, scores, subjects and enrolment counts.",
+      "An 18-migration PostgreSQL schema of 15 tables: accounts in users, profiles in students and teachers pointing back at them, then the academic domain — courses, schedules, subjects, enrolments, events, todos, questions, answers, form_map, tasks, submissions and scores.",
+      "A question sheet written in exactly one transaction. POST /api/teacher/questions creates the questions, their answers and one form_map row per allowed answer together, so a sheet that is half saved cannot be committed — and form_map is the join that makes the sheet a thing submissions can be posted against.",
+      "Scoring decided on the server rather than sent by the browser. A submission posts question-and-answer pairs and the API decides what was correct, then groups a student's submissions per form into a correct-over-total count for the score screen.",
+      "The transport between the halves: one middleware turns every JSON response into a base64 envelope of iv, value and mac under AES-256-CBC, and another decodes a non-GET body into request input, accepting it as either plain JSON or exact standard base64 — with GET /api/lms deliberately exempt, so there is one readable endpoint left to check the two deployments against each other.",
+      "A Vue 3 single-page app of 32 leaf routes across the three role areas, each under its own layout, sharing one sidebar component that takes a title and a nav array — a persistent sidebar that collapses to an icon rail above 1024px and an off-canvas drawer below it, with the collapse preference kept across roles.",
+      "Dashboards composed from three shared pieces — a statistic tile, a panel and an event list — over one page rhythm, with the rest of the screens built from shared classes in a single stylesheet rather than one-off styles, so a table or a modal looks the same wherever it appears.",
+      "One theming system rather than three: Tailwind with its class-based dark mode, a token block that maps the everyday light utilities onto dark values so an ordinary page themes itself, and a small inline copy of the theme resolution in the HTML shell so the class is on the document before the first paint.",
+      "Two independent Docker stacks, one per repository, each with its own compose file, environment example and command reference. The API one publishes PostgreSQL on 5433 so a developer's own database can keep 5432, and it can be pointed at a hosted Supabase project instead of the bundled database.",
+      "Deployment for each half on its own terms: the SPA on Vercel with the build command, the output directory and a catch-all rewrite to the shell for history-mode routes, and the API on Render rebuilt from its Dockerfile and bound to whichever port the host assigns."
+    ],
+    architecture: [
+      {
+        layer: "The SPA",
+        detail: "Vue 3 with Vue Router 4 and no store library, built by Vue CLI 5 on Node 22. 32 leaf routes, three layouts, one shared sidebar, and a single axios instance as the only way out of the app."
+      },
+      {
+        layer: "The transport",
+        detail: "Two middleware, one on the way out and one on the way in: the API encrypts every response body and decodes every non-GET request body, so the API's own JSON is never what actually travels over the wire."
+      },
+      {
+        layer: "Authorisation",
+        detail: "Sanctum bearer tokens plus a role middleware per surface, with student and teacher endpoints resolving the profile row from the authenticated user rather than trusting an id in the request."
+      },
+      {
+        layer: "The data model",
+        detail: "PostgreSQL, described by 18 migrations. Users is the account; students and teachers are profiles pointing at it; and a user without its profile row is a broken account that answers 404 until it exists."
+      },
+      {
+        layer: "Uploads",
+        detail: "Task attachments go straight from the browser to Cloudinary against an unsigned preset, so the API only ever stores the resulting URL and never handles the file."
+      },
+      {
+        layer: "Delivery",
+        detail: "The SPA on Vercel behind a catch-all rewrite, the API on Render, and the pair kept in step by the encryption key the API publishes for exactly that purpose."
+      }
+    ],
+    decisions: [
+      {
+        title: "Every response is ciphertext, and the key is published on purpose.",
+        detail: "The API encrypts each JSON response under AES-256-CBC and decrypts each non-GET request body, which means the SPA cannot talk to it at all unless the two sides hold the same key — a mismatch surfaces as a decryption failure, not a credentials error, which is the most confusing possible symptom for a deploy mistake. Publishing the key at GET /api/lms turns that into a one-request diagnosis. It is worth being plain about the trade-off: on a public endpoint this is obfuscation, not confidentiality, and the same endpoint is the one a reader should treat as removable."
+      },
+      {
+        title: "The SPA has no route guard, and that is deliberate.",
+        detail: "Only two dashboards check for a token before rendering; the admin area checks nothing at all. That is not a hole, because a route guard is not a security boundary — the guard would be running in the visitor's own browser. Every endpoint is protected server-side by a token check and a role check, so a visitor who types an admin URL gets a rendered shell whose requests all come back refused. The interface is allowed to be optimistic precisely because it decides nothing."
+      },
+      {
+        title: "A question sheet is one transaction or it is nothing.",
+        detail: "A sheet is not one row: it is questions, answers, and a join row per allowed answer that submissions are later posted against. Creating those in separate calls would leave a window in which a sheet exists without the rows that make it answerable. They are written together, which is what lets the rest of the system treat a question sheet as an atomic thing rather than a process that mostly works."
+      },
+      {
+        title: "Correctness is decided on the server, never asserted by the client.",
+        detail: "A submission carries which answers a student chose, not whether they were right. The API decides, and the score screen is built from what the server recorded — so a modified client cannot award itself marks, and the same result is reproduced on every reader of the data."
+      },
+      {
+        title: "The two halves share nothing but the host's ports.",
+        detail: "Each repository carries its own compose file and its own container, and neither one reaches the other from inside the network, because the browser is what calls the API. That is why one can be redeployed without the other, and it is also why the key has to be agreed rather than derived: there is no shared filesystem to read it from."
+      },
+      {
+        title: "One column name means two different ids, and the schema says so.",
+        detail: "teacher_id holds a teachers.id — the profile row's own key — in schedules, enrolments and questions, but a teachers.user_id in subjects, which is a users.id. That is the kind of detail that silently produces empty results when it is guessed wrong, so it is written down where the model is described rather than left to be rediscovered, and teachers.user_id is unique specifically so PostgreSQL will accept the second foreign key at all."
+      },
+      {
+        title: "The rough edges are documented as carefully as the features.",
+        detail: "The API README lists what is genuinely unfinished: a score model half-wired to columns the table does not have, a controller reading a field that never existed, two different keys for the same error message, a teacher id written one way and read another in the announcement and task paths, a duplicated login route, no rate limiting beyond the framework default, and a key handed to anyone who asks. A portfolio piece that only lists what works is a brochure; naming the parts that do not is what makes the rest of it credible."
+      }
+    ],
+    stack: [
+      "Laravel 10",
+      "PHP 8.2",
+      "Laravel Sanctum",
+      "PostgreSQL 16",
+      "Eloquent",
+      "AES-256-CBC",
+      "Vue 3",
+      "Vue Router 4",
+      "Vue CLI 5",
+      "Tailwind CSS",
+      "axios",
+      "Cloudinary",
+      "Docker",
+      "Docker Compose",
+      "Render",
+      "Vercel"
+    ],
+    outcome: [
+      "The pair is deployed and was checked as a pair rather than as two repositories: the SPA answers 200 on Vercel, the API's key endpoint answers 200 with the key it is currently using, and a login with deliberately wrong credentials comes back 401 carrying an encrypted envelope — which is the whole contract working in one request, since that body had to be encryptable and the front end's copy of the key has to match it. The same check turned up something less flattering: an unauthenticated request to a protected route answers 500 with an HTML error page rather than a 401 in the API's own format. A visitor never sees it, because the app catches the failure and shows a message, but it is the kind of thing worth catching before a stranger does.",
+      "What the project is really about, in the end, is where a decision is allowed to live. The browser holds a token and a route table and decides nothing else; the API owns the records, the roles and the marking; and the only thing genuinely shared between two deployments hosted by two companies is a key they both have to agree on. Both repositories are in the MIT-licensed open, documentation included — the deploys, the environment variables and the unfinished parts."
     ]
   }
 ];

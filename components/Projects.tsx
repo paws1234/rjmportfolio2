@@ -175,9 +175,6 @@ export default function Projects() {
                                         >
                                             <Chevron open={isOpen} />
                                             <span className="group-hover:underline">{p.name}</span>
-                                            <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-[11px] font-normal text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-                                                {p.year}
-                                            </span>
                                         </button>
                                     </h3>
 
